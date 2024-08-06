@@ -11,7 +11,13 @@ plugins {
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
+
+    `maven-publish`
 }
+
+group = "at.neon"
+// artifactId // default artifactId is the same as the project name
+version = "0.0.1-dev"
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -31,6 +37,38 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
+// publishing to mavelLocal results in following hierarchy:
+// ~/.m2/repository/at/differentneon/neon-lib/0.0.1-mavenrelease/neon-lib-0.0.1-mavenrelease.jar
+publishing {
+    publications {
+        create<MavenPublication>("neon-library") {
+            from(components["java"])
+            // the following settings overwrite the ones in the root build.gradle.kts
+            groupId = "at.differentneon"
+            artifactId = "neon-lib"
+            version = "0.0.1-mavenrelease"
+            /*
+            groupId = 'org.company'
+            artifactId = 'sample'
+            version = '0.9-SNAPSHOT'
+            from components.java
+            pom {
+                name = 'My Library'
+                description = 'A description of my library'
+            }
+             */
+        }
+    }
+
+    repositories {
+        maven {
+            name = "demo-repository"
+            url = uri(layout.buildDirectory.dir("demo-repository"))
+        }
+    }
+}
+
 
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.

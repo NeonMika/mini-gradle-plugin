@@ -13,6 +13,10 @@ plugins {
     `java-library`
 
     `maven-publish`
+
+    // To create a gradle plugin that is configured via the gradlePlugin { } section
+    `java-gradle-plugin`
+    `kotlin-dsl` // To be able to use Kotlin when developing the Plugin<Project> class
 }
 
 group = "at.neon"
@@ -38,15 +42,45 @@ java {
     }
 }
 
+gradlePlugin {
+    plugins {
+        create("randomNumberPlugin") {
+            /*
+            https://docs.gradle.org/current/userguide/java_gradle_plugin.html
+            From this data about the plugins being developed, Gradle can automatically:
+            - Generate the plugin descriptor in the jar file’s META-INF directory.
+            - Configure the Plugin Marker Artifact publications (Maven or Ivy) for each plugin.
+            - Publish each plugin to the Gradle Plugin Portal (see Publishing Plugins to Gradle Plugin Portal for details), but only if the Plugin Publishing Plugin has also been applied.
+             */
+            /*
+            https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_markers
+            The plugins{} DSL block only uses globally unique plugin id and version property.
+            We thus can use this plugin using
+            plugins { id("at.neon.random-number") version "0.0.1-dev" }
+
+            Thus, the global "group" value has no influence on the plugin.
+            The plugin is solely identified by its id and version.
+             */
+            id = "at.neon.random-number"
+            implementationClass = "at.neon.plugin.RandomNumberPlugin"
+            // version = "0.0.1-dev" // We could override the global version here
+        }
+    }
+}
+
+// This is not needed for a plugin, but only for a library
+// Plugin publishing is configured via the gradlePlugin { } block
+// but most of the default settings are already fine
+/*
 // publishing to mavelLocal results in following hierarchy:
 // ~/.m2/repository/at/differentneon/neon-lib/0.0.1-mavenrelease/neon-lib-0.0.1-mavenrelease.jar
 publishing {
     publications {
-        create<MavenPublication>("neon-library") {
+        create<MavenPublication>("neonlibrary") {
             from(components["java"])
             // the following settings overwrite the ones in the root build.gradle.kts
             groupId = "at.differentneon"
-            artifactId = "neon-lib"
+            artifactId = "neonlib"
             version = "0.0.1-mavenrelease"
             /*
             groupId = 'org.company'
@@ -68,6 +102,7 @@ publishing {
         }
     }
 }
+ */
 
 
 tasks.named<Test>("test") {
